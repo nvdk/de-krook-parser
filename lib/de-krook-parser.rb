@@ -1,7 +1,7 @@
 require 'csv'
 require 'linkeddata'
 require 'net/http'
-require 'yaml/store'
+require 'pstore'
 require 'net/http/persistent'
 require 'logger'
 

@@ -50,26 +50,32 @@ module DeKrookParser
       end
 
       def isbn_to_oclc(isbn)
-        @oclc_store ||= YAML::Store.new('isbn-to-oclc.yml')
-        @oclc_store.transaction do                                                  
-          unless @oclc_store[isbn]
+        @oclc_store ||= PStore.new('isbn-to-oclc.store')
+        @oclc_store.transaction do      
+          @oclc_store['failed'] ||= []                                            
+          Unless @oclc_store[isbn] or @oclc_store['failed'].include?(isbn)
             worldcat_url = fetch_isbn_from_worldcat(isbn)
             if worldcat_url
-                @oclc_store[isbn] = worldcat_url
-              end
+              @oclc_store[isbn] = worldcat_url
+              @oclc_store['failed'] << isbn
+            end
           end
           @oclc_store[isbn]
         end
       end
 
       def fetch_isbn_from_worldcat(isbn)
-        Net::HTTP.start('www.worldcat.org', 80) do |http|
-          response = http.head(URI("http://www.worldcat.org/isbn/#{isbn}"))
-          if response['Location']
-            response['Location']
-          else
-            nil
+        begin
+          Net::HTTP.start('www.worldcat.org', 80) do |http|
+            response = http.head(URI("http://www.worldcat.org/isbn/#{isbn}"))
+            if response['Location']
+              response['Location']
+            else
+              nil
+            end
           end
+        rescue Exception => e
+          logger.error e
         end
       end
          
@@ -84,7 +90,7 @@ module DeKrookParser
       end
     
       def valid_isbn?(isbn)
-        isbn.to_i > 0
+        isbn.to_i > 0 && isbn.length == 13 or isbn.length == 10
       end
 
       def type_of_work(materiaal)
