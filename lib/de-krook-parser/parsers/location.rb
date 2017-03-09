@@ -29,7 +29,7 @@ module DeKrookParser
          graph << [ agent, RDF.type, SCHEMA.Organization ]
          graph = graph + purl_triples(agent)
          graph << [ agent, SCHEMA.name, row["BKLocatie"] ]
-         location = agent_location(location)       
+         location = agent_location(agent)       
          graph << [ agent, SCHEMA.location, location  ]
          graph << [ location, SCHEMA.containsPlace, iri ]
          graph += purl_triples(location)

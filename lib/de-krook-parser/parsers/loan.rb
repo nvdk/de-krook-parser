@@ -23,7 +23,7 @@ module DeKrookParser
       end
       
       def links_to_others(iri, row)
-       subscription_iri = subscription_uri(Digest::MD5.hexdigest(row["LenerLocatieInschrijving"],row["LenerMaandInschrijving"]))
+       subscription_iri = subscription_uri(Digest::MD5.hexdigest(row["LenerLocatieInschrijving"]+row["LenerMaandInschrijving"]))
        graph = []
        graph << [ iri, SERVICE.consumes, offer_uri(row["ExemplaarID"]) ]
        graph << [ iri, DATEX.hasSubscription, subscription_iri ]
