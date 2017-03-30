@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+require 'optparse'
+require 'pstore'
+require 'date'
+require 'logger'
+require_relative '../lib/de-krook-parser'
+
+## Options using optparse
+options = {
+  outputfile: "dekrook.ttl",
+  inputfile: nil,
+  base_iri: "http://qa.stad.gent/",
+  append: false,
+  config: File.join(FileUtils.pwd,'krook-parser.store')
+}
+opt_parser = OptionParser.new do |opt|
+opt.banner = "Usage: #{__FILE__} [OPTIONS]"
+  opt.separator ''
+  opt.separator 'Options'
+
+  opt.on('-o', '--outputfile OUTPUT_PATH', '(relative) filepath to store output, default "."') do |file|
+    options[:output] = file
+  end
+  opt.on('-i', '--inputfile INPUT_PATH', '(relative) filepath to the files to be parsed, REQUIRED') do |file|
+    options[:input] = file
+  end
+  opt.on('-f','--full', 'do a full conversion instead of starting after last parsed location') do
+    options[:full] = true
+  end
+  opt.on('-b', '--base-iri', 'base IRI to be used for creating resources, default "http://qa.stad.gent/"') do |iri|
+    options[:base_iri] = iri
+  end
+  opt.on('-c', '--config', 'PATH to config file, default "./krook-parser.store"') do |path|
+    options[:config] = path
+  end
+  opt.on('-h', '--help', 'help') do
+    puts opt_parser
+    options[:help] = true
+  end
+end
+
+begin
+  opt_parser.parse!
+  mandatory = [:input]
+  missing = mandatory.select{ |param| options[param].nil? } 
+  unless missing.empty?                                           
+    raise OptionParser::MissingArgument.new(missing.join(', '))
+  end                                                          
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument 
+  puts $!.to_s
+  puts opt_parser
+  exit                                                            
+end
+  
+input_dir = options[:input] 
+output_dir = options[:output] || File.realpath('.')
+baseIRI = options[:base_iri] || 'http://qa.stad.gent/'
+mode = options[:full] ? :full : :incremental
+config = PStore.new(options[:config])
+config.transaction do
+  year = DateTime.now.year
+  files = ["Werk.csv", "Locatie.csv", "Exemplaar.csv", "Uitlening_Lener_#{year}.csv", "Uitlening_Tijd_#{year}.csv"]
+  config[:last_run] ||= Hash.new
+  
+  files.each do |val|
+    unless config[:last_run].has_key?(val)
+      config[:last_run][val] = 0
+    end
+  end
+end
+
+logger = Logger.new(STDOUT)
+logger.level = Logger::WARN
+logger.warn 'running full/initial conversion of "de krook" dataset, may take a long time' unless mode == :incremental
+
+DeKrookParser.parse(input_dir: input_dir, output_dir: output_dir, base_iri: baseIRI, mode: mode, config: config)
+
+
+
