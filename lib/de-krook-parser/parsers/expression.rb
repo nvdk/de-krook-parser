@@ -11,9 +11,9 @@ module DeKrookParser
         "EindDatum": SCHEMA.validThrough
       }
 
-      def self.parse(baseIRI, filepath)
+      def self.parse(baseIRI, filepath, index = 0)
         expression_parser = Expression.new(mapping: MAPPING, baseIRI: baseIRI , keyColumn: "ExemplaarID")
-        expression_parser.parse(filepath)
+        expression_parser.parse(filepath, index)
       end
 
       def parse_row(index, row)

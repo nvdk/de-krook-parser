@@ -7,9 +7,9 @@ module DeKrookParser
                  "Groepering": SCHEMA.description
       }
 
-      def self.parse(baseIRI, filepath)
+      def self.parse(baseIRI, filepath, index = 0)
         expression_parser = Location.new(mapping: MAPPING, baseIRI: baseIRI , keyColumn: "LocatieID")
-        expression_parser.parse(filepath)
+        expression_parser.parse(filepath, index)
       end
 
       def parse_row(index, row)

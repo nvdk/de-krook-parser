@@ -8,9 +8,9 @@ module DeKrookParser
         "DatumTot": SCHEMA.endDate,
       }
 
-      def self.parse(baseIRI, filepath)
+      def self.parse(baseIRI, filepath, index = 0)
         expression_parser = LoanTime.new(mapping: MAPPING, baseIRI: baseIRI)
-        expression_parser.parse(filepath)
+        expression_parser.parse(filepath, index)
       end
 
       def parse_row(index, row)

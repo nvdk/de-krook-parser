@@ -15,9 +15,9 @@ module DeKrookParser
         "Titel": SCHEMA.name
       }
 
-      def self.parse(baseIRI, filepath)
+      def self.parse(baseIRI, filepath, index = 0)
         work_parser = Work.new(mapping: MAPPING, baseIRI: baseIRI , keyColumn: "WerkID")
-        work_parser.parse(filepath)
+        work_parser.parse(filepath, index)
       end
 
       def parse_row(index, row)

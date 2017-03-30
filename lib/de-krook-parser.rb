@@ -50,7 +50,7 @@ module DeKrookParser
         truncate_file(path, index)
       end
       begin
-        tmp_file = parser.parse(base_iri, path, )
+        tmp_file = parser.parse(base_iri, path, index )
         FileUtils.copy(tmp_file, File.join(output_dir,File.basename(path) + ".ttl"))
         line_count=`wc -l #{path}`
         config[:last_run][File.basename(path)] = line_count
