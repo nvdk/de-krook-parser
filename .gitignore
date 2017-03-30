@@ -43,3 +43,9 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# do not publish stores
+*.store
+
+# do not publish builds
+*.jar
