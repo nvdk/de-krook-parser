@@ -63,7 +63,7 @@ module DeKrookParser
   end
 
   def self.truncate_file(path, index)
-    `tail -n +#{index} #{path} > #{path}.truncated && mv #{path}.truncated #{path}`
+  `head -n 1 #{path} > #{path}.truncated && tail -n +#{index} #{path} >> #{path}.truncated && mv #{path}.truncated #{path}`
   end
 end
 
