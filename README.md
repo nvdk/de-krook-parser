@@ -2,8 +2,6 @@
 
 A ruby project to convert the open data dumps from de krook to linked open data. Where possible books are linked to a book on oclc.org
 
-# install/running it
-
 ## requirements
 - (j)ruby 2.x
 - bundle
@@ -44,6 +42,6 @@ Options
 
 ```
 
-# license
+## license
 
-See license.md
+See [License](LICENSE)
