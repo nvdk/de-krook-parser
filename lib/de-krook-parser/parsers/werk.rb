@@ -53,7 +53,7 @@ module DeKrookParser
         @oclc_store ||= PStore.new('isbn-to-oclc.store')
         @oclc_store.transaction do      
           @oclc_store['failed'] ||= []                                            
-          Unless @oclc_store[isbn] or @oclc_store['failed'].include?(isbn)
+          unless @oclc_store[isbn] or @oclc_store['failed'].include?(isbn)
             worldcat_url = fetch_isbn_from_worldcat(isbn)
             if worldcat_url
               @oclc_store[isbn] = worldcat_url

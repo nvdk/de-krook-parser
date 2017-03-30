@@ -17,15 +17,16 @@ module DeKrookParser
         @keyColumn = keyColumn
       end
 
-      def parse(filepath)
-        index = 0
+      def parse(filepath, index = 0)
         output = Tempfile.new("parse-of-#{File.basename(filepath)}")
         output.write "# parsing #{filepath}"
         begin
+        headers_parsed = false
         ::CSV.foreach(filepath, csv_parse_options) do |row|
-          if index == 0
+          unless headers_parsed
             @columnCount = row.size
             index += 1
+            headers_parsed = true
             next
           end
           ensure_valid_row(row, index) do |row|
