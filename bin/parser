@@ -5,23 +5,27 @@ require 'date'
 require 'logger'
 require_relative '../lib/de-krook-parser'
 
+# set up logger
+logger = Logger.new(STDOUT)
+logger.level = Logger::WARN
+
 ## Options using optparse
 options = {
-  outputfile: "dekrook.ttl",
-  inputfile: nil,
+  output: "dekrook.ttl",
+  input: nil,
   base_iri: "http://qa.stad.gent/",
   append: false,
-  config: File.join(FileUtils.pwd,'krook-parser.store')
+  config: FileUtils.pwd
 }
 opt_parser = OptionParser.new do |opt|
 opt.banner = "Usage: #{__FILE__} [OPTIONS]"
   opt.separator ''
   opt.separator 'Options'
 
-  opt.on('-o', '--outputfile OUTPUT_PATH', '(relative) filepath to store output, default "."') do |file|
+  opt.on('-o', '--output OUTPUT_PATH', '(relative) filepath to store output, default "."') do |file|
     options[:output] = file
   end
-  opt.on('-i', '--inputfile INPUT_PATH', '(relative) filepath to the files to be parsed, REQUIRED') do |file|
+  opt.on('-i', '--input INPUT_PATH', '(relative) filepath to the files to be parsed, REQUIRED') do |file|
     options[:input] = file
   end
   opt.on('-f','--full', 'do a full conversion instead of starting after last parsed location') do
@@ -30,8 +34,8 @@ opt.banner = "Usage: #{__FILE__} [OPTIONS]"
   opt.on('-b', '--base-iri', 'base IRI to be used for creating resources, default "http://qa.stad.gent/"') do |iri|
     options[:base_iri] = iri
   end
-  opt.on('-c', '--config', 'PATH to config file, default "./krook-parser.store"') do |path|
-    options[:config] = path
+  opt.on('-c', '--config PATH', 'PATH to config file, default "./"') do |file|
+    options[:config] = file
   end
   opt.on('-h', '--help', 'help') do
     puts opt_parser
@@ -51,12 +55,12 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   puts opt_parser
   exit                                                            
 end
-  
+
 input_dir = options[:input] 
 output_dir = options[:output] || File.realpath('.')
 baseIRI = options[:base_iri] || 'http://qa.stad.gent/'
 mode = options[:full] ? :full : :incremental
-config = PStore.new(options[:config])
+config = PStore.new(File.join(options[:config],'krook-parser.store'))
 config.transaction do
   year = DateTime.now.year
   files = ["Werk.csv", "Locatie.csv", "Exemplaar.csv", "Uitlening_Lener_#{year}.csv", "Uitlening_Tijd_#{year}.csv"]
@@ -69,8 +73,6 @@ config.transaction do
   end
 end
 
-logger = Logger.new(STDOUT)
-logger.level = Logger::WARN
 logger.warn 'running full/initial conversion of "de krook" dataset, may take a long time' unless mode == :incremental
 
 DeKrookParser.parse(input_dir: input_dir, output_dir: output_dir, base_iri: baseIRI, mode: mode, config: config)
