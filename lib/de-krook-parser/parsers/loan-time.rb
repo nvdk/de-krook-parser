@@ -24,6 +24,7 @@ module DeKrookParser
        graph = []
        graph << [ iri, SERVICE.consumes, offer_uri(row["ExemplaarID"]) ]
        graph << [ iri, SCHEMA.location, agent_uri(Digest::MD5.hexdigest(row["Locatie"])) ] unless is_empty?(row["Locatie"])
+       graph
       end
 
       def type_triples(iri, row)
