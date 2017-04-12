@@ -57,6 +57,7 @@ module DeKrookParser
             worldcat_url = fetch_isbn_from_worldcat(isbn)
             if worldcat_url
               @oclc_store[isbn] = worldcat_url
+            else
               @oclc_store['failed'] << isbn
             end
           end
@@ -75,7 +76,9 @@ module DeKrookParser
             end
           end
         rescue Exception => e
-          logger.error e
+          logger.error "fetching worldcat for isbn #{isbn} failed: #{e.message}"
+          logger.debug e.backtrace.join("\n")
+          nil
         end
       end
          
