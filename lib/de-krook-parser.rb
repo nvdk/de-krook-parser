@@ -42,6 +42,7 @@ module DeKrookParser
   end
 
   def self.parse_file(path:, parser:, mode:, output_dir:, base_iri:, config:)
+    cleanup_file(path)
     config.transaction do
       index = 0
       if mode == :incremental
@@ -52,7 +53,7 @@ module DeKrookParser
       begin
         tmp_file = parser.parse(base_iri, path, index )
         FileUtils.copy(tmp_file, File.join(output_dir,File.basename(path) + ".ttl"))
-        line_count=`wc -l #{path}`
+        line_count=`wc -l #{path} | awk '{ print $1 }'`
         config[:last_run][File.basename(path)] = line_count
       rescue Exception => e
         LOGGER.error "error encountered during parsing of #{path}"
@@ -60,6 +61,10 @@ module DeKrookParser
         # TODO: reset index?
       end
     end
+  end
+
+  def self.cleanup_file(path)
+    `sed -i '/ge&/d' #{path}`
   end
 
   def self.truncate_file(path, index)
