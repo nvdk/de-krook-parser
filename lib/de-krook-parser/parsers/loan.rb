@@ -38,7 +38,7 @@ module DeKrookParser
       end
 
       def row_iri(index, row)
-        id = Digest::MD5.hexdigest(row["LenerCategorie"]+row["LenerGeboorteJaar"]+row["LenerGeslacht"]+row["LenerLocatieInschrijving"]+row["LenerMaandInschrijving"]+row["LenerPostCode"])
+        id = Digest::MD5.hexdigest("" + row["LenerCategorie"]+row["LenerGeboorteJaar"]+row["LenerGeslacht"]+row["LenerLocatieInschrijving"]+row["LenerMaandInschrijving"]+row["LenerPostCode"])
         agent_uri(id)
       end
     end

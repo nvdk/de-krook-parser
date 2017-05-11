@@ -2,20 +2,17 @@
 require 'optparse'
 require 'pstore'
 require 'date'
-require 'logger'
 require_relative '../lib/de-krook-parser'
-
-# set up logger
-logger = Logger.new(STDOUT)
-logger.level = Logger::WARN
 
 ## Options using optparse
 options = {
-  output: "dekrook.ttl",
+  output: ".",
   input: nil,
-  base_iri: "http://qa.stad.gent/",
+  base_iri: "https://qa.stad.gent/",
   append: false,
-  config: FileUtils.pwd
+  config: FileUtils.pwd,
+  type: "all",
+  year: DateTime.now.year
 }
 opt_parser = OptionParser.new do |opt|
 opt.banner = "Usage: #{__FILE__} [OPTIONS]"
@@ -39,7 +36,13 @@ opt.banner = "Usage: #{__FILE__} [OPTIONS]"
   end
   opt.on('-h', '--help', 'help') do
     puts opt_parser
-    options[:help] = true
+    exit
+  end
+  opt.on('-t', '--type TYPE', 'type to be parsed: [all, werk, locatie, exemplaar, uitlening_lener, uitlening_tijd, reservatie], default "all"') do |type|
+    options[:type] = type
+  end
+  opt.on('-y', '--year YEAR', 'year to be used for loan and loan_time, default "' + options[:year].to_s + '"') do |year|
+    options[:year] = year
   end
 end
 
@@ -57,15 +60,16 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
 end
 
 input_dir = options[:input] 
-output_dir = options[:output] || File.realpath('.')
+output_dir = File.realpath(options[:output])
 baseIRI = options[:base_iri] || 'http://qa.stad.gent/'
 mode = options[:full] ? :full : :incremental
 config = PStore.new(File.join(options[:config],'krook-parser.store'))
+year = options[:year]
+type = options[:type]
+
 config.transaction do
-  year = DateTime.now.year
-  files = ["Werk.csv", "Locatie.csv", "Exemplaar.csv", "Uitlening_Lener_#{year}.csv", "Uitlening_Tijd_#{year}.csv"]
+  files = ["Werk.csv", "Locatie.csv", "Exemplaar.csv", "Uitlening_Lener_#{year}.csv", "Uitlening_Tijd_#{year}.csv", "Reservatie_Tijd.csv"]
   config[:last_run] ||= Hash.new
-  
   files.each do |val|
     unless config[:last_run].has_key?(val)
       config[:last_run][val] = 0
@@ -73,9 +77,8 @@ config.transaction do
   end
 end
 
-logger.warn 'running full/initial conversion of "de krook" dataset, may take a long time' unless mode == :incremental
 
-DeKrookParser.parse(input_dir: input_dir, output_dir: output_dir, base_iri: baseIRI, mode: mode, config: config)
+DeKrookParser.parse(input_dir: input_dir, output_dir: output_dir, base_iri: baseIRI, mode: mode, config: config, year: year, type: type)
 
 
 

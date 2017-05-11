@@ -16,8 +16,8 @@ module DeKrookParser
   LOGGER = Logger.new(STDOUT)
   LOGGER.level = Logger::INFO
 
-  def self.parse(input_dir:, output_dir:, config:, base_iri:, mode:)
-    year = DateTime.now.year
+  def self.parse(input_dir:, output_dir:, config:, base_iri:, mode:, year:, type: )
+    year = year
     files = {
       "Werk.csv": Parsers::Work,
       "Locatie.csv": Parsers::Location,
@@ -25,8 +25,13 @@ module DeKrookParser
       "Uitlening_Lener_#{year}.csv": Parsers::Loan,
       "Uitlening_Tijd_#{year}.csv": Parsers::LoanTime
     }
+    unless (type == "all")
+      files.keep_if { |key,value| key.to_s.downcase.include?(type.downcase)}
+    end
+    LOGGER.info "the files #{files} will be parsed"
+    LOGGER.warn "no files selected for type #{type}" unless files.length > 0
     files.each do |file, parser|
-      LOGGER.info file
+      LOGGER.info file.to_s
       parse_file(
        path: File.join(input_dir,file.to_s),
        parser: parser,
@@ -45,16 +50,18 @@ module DeKrookParser
     cleanup_file(path)
     config.transaction do
       index = 0
-      if mode == :incremental
-        index = config[:last_run][File.basename(path)]
+      line_count=`wc -l #{path} | awk '{ print $1 }'`
+      if mode == :incremental && config[:last_run][File.basename(path)].to_i > 0
+        index = config[:last_run][File.basename(path)].to_i        
         LOGGER.info "truncating file #{path} to index #{index}"
         truncate_file(path, index)
-      end
-      begin
+    end
+    LOGGER.warn "running full/initial conversion of #{File.basename(path)} dataset, may take a long time" unless index > 0
+    begin
         tmp_file = parser.parse(base_iri, path, index )
         FileUtils.copy(tmp_file, File.join(output_dir,File.basename(path) + ".ttl"))
-        line_count=`wc -l #{path} | awk '{ print $1 }'`
         config[:last_run][File.basename(path)] = line_count
+        tmp_file.unlink
       rescue Exception => e
         LOGGER.error "error encountered during parsing of #{path}"
         LOGGER.error e
