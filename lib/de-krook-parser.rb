@@ -23,7 +23,8 @@ module DeKrookParser
       "Locatie.csv": Parsers::Location,
       "Exemplaar.csv": Parsers::Expression,
       "Uitlening_Lener_#{year}.csv": Parsers::Loan,
-      "Uitlening_Tijd_#{year}.csv": Parsers::LoanTime
+      "Uitlening_Tijd_#{year}.csv": Parsers::LoanTime,
+      "Reservatie_Tijd.csv": Parsers::Reservation 
     }
     unless (type == "all")
       files.keep_if { |key,value| key.to_s.downcase.include?(type.downcase)}

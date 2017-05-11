@@ -42,6 +42,10 @@ module DeKrookParser::Parsers::KrookHelpers
     RDF::URI("#{baseIRI}id/dekrook/agents/#{id}")
   end
 
+  def reservation_uri(id)
+    RDF::URI("#{baseIRI}id/dekrook/reservations/#{id}")
+  end
+  
   def agent_location(iri)
     RDF::URI.new(iri.to_s.gsub(/\/agents\//,'/locations/'))
   end
