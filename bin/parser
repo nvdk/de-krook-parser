@@ -28,7 +28,7 @@ opt.banner = "Usage: #{__FILE__} [OPTIONS]"
   opt.on('-f','--full', 'do a full conversion instead of starting after last parsed location') do
     options[:full] = true
   end
-  opt.on('-b', '--base-iri', 'base IRI to be used for creating resources, default "http://qa.stad.gent/"') do |iri|
+  opt.on('-b', '--base-iri IRI', 'base IRI to be used for creating resources, default "http://qa.stad.gent/"') do |iri|
     options[:base_iri] = iri
   end
   opt.on('-c', '--config PATH', 'PATH to config file, default "./"') do |file|
@@ -61,7 +61,7 @@ end
 
 input_dir = options[:input] 
 output_dir = File.realpath(options[:output])
-baseIRI = options[:base_iri] || 'http://qa.stad.gent/'
+baseIRI = options[:base_iri] ? options[:base_iri] : 'https://qa.stad.gent/'
 mode = options[:full] ? :full : :incremental
 config = PStore.new(File.join(options[:config],'krook-parser.store'))
 year = options[:year]
