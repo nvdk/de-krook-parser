@@ -7,6 +7,8 @@ OUTPUT_PATH=$2
 YEAR=`date "+%Y"`
 BASEDIR=`dirname $0`
 DOWNLOADURL=`head -n 1 $CONFIG | xargs`
+EXTRA_OPTIONS=`sed -n 2p $CONFIG | xargs`
+FILE=`sed -n 3p $CONFIG | xargs`
 WORKDIR=/tmp/files-to-parse-$RANDOM
 LOGFILE=/tmp/dekrookparser.log
 
@@ -21,16 +23,18 @@ fi
 
 mkdir -p $WORKDIR
 
+if [[ $FILE == "Uitlening_Tijd" || $FILE == "Uitlening_Lener" ]]; then
+		FILE="${FILE}_${YEAR}";
+fi
 
-for x in Locatie Werk Exemplaar Uitlening_Lener_$YEAR Uitlening_Tijd_$YEAR;do
-  curl $DOWNLOADURL/$x.csv -s -o $WORKDIR/$x.csv &>> $LOGFILE
-done
+echo "downloading $DOWNLOADURL/$FILE.csv" >> $LOGFILE
+curl "$DOWNLOADURL/$FILE.csv" -s -o $WORKDIR/$FILE.csv &>> $LOGFILE
 
 echo "finished downloading files" >> $LOGFILE
-echo "java -jar dekrook-parser -i '$DIR' -c '$BASEDIR' -o '$OUTPUT_PATH'" >> $LOGFILE
+echo "java -jar dekrook-parser -i '$WORKDIR' -c '$BASEDIR' -o '$OUTPUT_PATH'" $EXTRA_OPTIONS >> $LOGFILE
 
 pushd $BASEDIR
-  /usr/bin/java -jar dekrook-parser.jar -i $WORKDIR -c $BASEDIR -o $OUTPUT_PATH &>> $LOGFILE
+  /usr/bin/java -jar dekrook-parser.jar -i "$WORKDIR" -c "$BASEDIR" -o "$OUTPUT_PATH" $EXTRA_OPTIONS &>> $LOGFILE
   SUCCESS=$?
   echo "finished parser with exit code $SUCCESS" >> $LOGFILE
 popd
