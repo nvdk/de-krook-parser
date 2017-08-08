@@ -27,10 +27,28 @@ module DeKrookParser
        graph
       end
 
+      def date_triples(iri, row)
+        graph = []
+        if valid_date?(row["DatumVan"]) && valid_date?(row["DatumTot"])
+          graph << [ iri, SCHEMA.startDate, RDF::Literal::DateTime.new(row["DatumVan"]) ]
+          graph << [ iri, SCHEMA.endDate, RDF::Literal::DateTime.new(row["DatumTot"]) ]
+        end
+        graph
+      end
+
       def type_triples(iri, row)
         [ 
           [ iri, RDF.type, DSO.Loan ]
         ]
+      end
+
+      def valid_date?(datestring)
+        begin
+          DateTime.parse(datestring)
+          true
+        rescue
+          false
+        end
       end
 
       def row_iri(index, row)
